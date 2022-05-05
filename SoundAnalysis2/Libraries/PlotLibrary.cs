@@ -20,11 +20,10 @@ namespace SoundAnalysis2.Libraries
             };
 
             var series = new LineSeries();
-            var chartMaxY = 2 * points.Max(p => p.Y);
-            var chartMinY = 2 * points.Min(p => p.Y);
-            plotModel.Axes.Add(new LinearAxis
-                {Position = AxisPosition.Left, Maximum = chartMaxY, Minimum = chartMinY, IsAxisVisible = true});
-            plotModel.Axes.Add(new LinearAxis {Position = AxisPosition.Bottom, IsAxisVisible = true});
+            var chartMaxY = 1.2 * points.Max(p => p.Y);
+            var chartMinY = 1.2 * points.Min(p => p.Y);
+            plotModel.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = labelY, Maximum = chartMaxY, Minimum = chartMinY });
+            plotModel.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Title = labelX });
 
             series.Points.AddRange(points);
             series.Color = Color;
@@ -38,12 +37,13 @@ namespace SoundAnalysis2.Libraries
             {
                 PlotType = PlotType.XY,
                 Background = OxyColors.White
-
             };
 
+            var chartMaxY = 1.2 * resultPoints.Max(p => p.Y);
+
             var series = new LineSeries();
-            plotModel.Axes.Add(new LinearAxis {Position = AxisPosition.Left, IsAxisVisible = true});
-            plotModel.Axes.Add(new LinearAxis {Position = AxisPosition.Bottom, IsAxisVisible = true});
+            plotModel.Axes.Add(new LinearAxis { Position = AxisPosition.Left,  Maximum = chartMaxY });
+            plotModel.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom });
 
             series.Points.AddRange(resultPoints);
             series.Color = Color;
@@ -77,6 +77,7 @@ namespace SoundAnalysis2.Libraries
             {
                 Position = AxisPosition.Right,
                 IsAxisVisible = false,
+                Palette = OxyPalettes.Rainbow(100),
             });
 
             return plotModel;

@@ -1,6 +1,7 @@
 using System.Globalization;
 using NAudio.Wave;
 using OxyPlot;
+using SoundAnalysis2.Calculators;
 using SoundAnalysis2.Libraries;
 
 namespace SoundAnalysis2
@@ -70,7 +71,7 @@ namespace SoundAnalysis2
 
         private void UpdateParameter(FrameParameterType parameter, Label label, OxyPlot.WindowsForms.PlotView chart)
         {
-            var (value, valueInFrames) = Calculator.CalculateFrameLevelParameter(parameter, discreteSignal, samplesPerFrame, selectedWindowType, sampleRate, bandStart, bandEnd);
+            var (value, valueInFrames) = FrequencyParametersCalculator.CalculateFrameLevelParameter(parameter, discreteSignal, samplesPerFrame, selectedWindowType, sampleRate, bandStart, bandEnd);
 
             label.Text = value.ToString("0.000");
             var resultPoints = new DataPoint[valueInFrames.Length];
@@ -114,17 +115,17 @@ namespace SoundAnalysis2
             DataPoint[] fourierResult = new DataPoint[1];
 
             if (selectedFourierTransformScope == FourierTransformScope.WholeClip)
-                fourierResult = Calculator.CalculateFourierTransform(discreteSignal, sampleRate, selectedWindowType);
+                fourierResult = FourierHelpers.CalculateFourierTransform(discreteSignal, sampleRate, selectedWindowType);
 
             else if (selectedFourierTransformScope == FourierTransformScope.OneFrame)
-                fourierResult = Calculator.CalculateFourierTransform(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, (int)(sampleRate * selectedFrameStartTime));
+                fourierResult = FourierHelpers.CalculateFourierTransform(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, (int)(sampleRate * selectedFrameStartTime));
 
             fourierPlotView.Model = PlotLibrary.UpdateWaveformPlot(fourierResult, "Frequency [Hz]", "Magnitude", "Fourier Transform");
         }
 
         private void UpdateSpectrum()
         {
-            Calculator.CalculateSpectrogram(discreteSignal, selectedWindowType, samplesPerFrame, frameOverlapping, out var transformResult);
+            SpectrogramCalculator.CalculateSpectrogram(discreteSignal, selectedWindowType, samplesPerFrame, frameOverlapping, out var transformResult);
             spectrogramPlotView.Model = PlotLibrary.UpdateSpectrogram(transformResult, discreteSignal.Last().X, sampleRate);
         }
 
