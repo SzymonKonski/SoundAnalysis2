@@ -24,13 +24,13 @@ namespace SoundAnalysis2.Calculators
 
             if (parameter == FrameParameterType.EffectiveBandwidth)
             {
-                var (val, frequencyCentroid) = GetFrequencyCentroid(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, framesCount);
+                var (_, frequencyCentroid) = GetFrequencyCentroid(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, framesCount);
                 return GetEffectiveBandwith(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, framesCount, frequencyCentroid);
             }
 
             if (parameter == FrameParameterType.FrequencyVolume)
             {
-                var (result, volume) = GetFrequencyVolume(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, framesCount);
+                var (_, volume) = GetFrequencyVolume(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, framesCount);
                 var avgVolume = Normalize(ref volume);
                 return (avgVolume, volume);
             }
@@ -131,7 +131,6 @@ namespace SoundAnalysis2.Calculators
 
             avgResult /= framesCount;
             return (avgResult, resultInFrames);
-            ;
         }
 
         public static (double, double[]) GetBandEnergy(DataPoint[] discreteSignal, double sampleRate, WindowType selectedWindowType, int samplesPerFrame, int framesCount, int bandStart, int bandEnd)
@@ -150,11 +149,10 @@ namespace SoundAnalysis2.Calculators
 
                 var nominator = 0.0;
                 var denominator = 0.0;
-                var spectrumPoints = transformResult.Where(p => p.X >= bandStart && p.X <= bandEnd);
+                var spectrumPoints = transformResult.Where(p => p.X >= bandStart && p.X <= bandEnd).ToList();
                 foreach (var spectrumPoint in spectrumPoints)
                 {
                     var spectrumValue = spectrumPoint.Y + shift;
-
                     nominator += spectrumValue * spectrumValue;
                 }
 
@@ -163,7 +161,6 @@ namespace SoundAnalysis2.Calculators
 
                 resultInFrames[i] = nominator / denominator;
                 avgResult += resultInFrames[i] / spectrumPoints.Count();
-
                 sampleIndex += samplesPerFrame;
             }
 

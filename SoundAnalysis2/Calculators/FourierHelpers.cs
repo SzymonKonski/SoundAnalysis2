@@ -41,26 +41,23 @@ namespace SoundAnalysis2.Calculators
 
         private static Complex32[] GetSamplesForFourier(IEnumerable<DataPoint> samplesToTransform, WindowType selectedWindowType, out int newSamplesCount)
         {
-            double[] window = null;
-            switch (selectedWindowType)
-            {
-                case WindowType.Rectangular:
-                    window = Window.Dirichlet(samplesToTransform.Count());
-                    break;
-                case WindowType.Hamming:
-                    window = Window.Hamming(samplesToTransform.Count());
-                    break;
-                case WindowType.Hann:
-                    window = Window.Hann(samplesToTransform.Count());
-                    break;
-            }
+            double[]? window = null;
+            var toTransform = samplesToTransform.ToList();
 
-            var closestPowerOfTwo = (int)Math.Ceiling(Math.Log(samplesToTransform.Count(), 2));
+            window = selectedWindowType switch
+            {
+                WindowType.Rectangular => Window.Dirichlet(toTransform.Count),
+                WindowType.Hamming => Window.Hamming(toTransform.Count),
+                WindowType.Hann => Window.Hann(toTransform.Count),
+                _ => window
+            };
+
+            var closestPowerOfTwo = (int)Math.Ceiling(Math.Log(toTransform.Count, 2));
             newSamplesCount = (int)Math.Pow(2, closestPowerOfTwo);
             var transformData = new Complex32[newSamplesCount];
 
-            for (var i = 0; i < samplesToTransform.Count(); i++)
-                transformData[i] = (float)(samplesToTransform.ElementAt(i).Y * window[i]);
+            for (var i = 0; i < toTransform.Count(); i++)
+                transformData[i] = (float)(toTransform.ElementAt(i).Y * window[i]);
 
             return transformData;
         }

@@ -6,12 +6,12 @@ namespace SoundAnalysis2.Calculators
 {
     public static class SpectrogramCalculator
     {
-        public static void CalculateSpectrogram(DataPoint[] discreteSignal, WindowType selectedWindowType, int samplesPerFrame, double frameOverlapping, out double[,] transformResult)
+        public static double[,] CalculateSpectrogram(DataPoint[] discreteSignal, WindowType selectedWindowType, int samplesPerFrame, double frameOverlapping )
         {
             var samplesToTransform = GetSamplesForSpectrogram(discreteSignal, samplesPerFrame, frameOverlapping,
                 selectedWindowType, out var rowCount, out var columnCount, out _);
 
-            transformResult = new double[columnCount, rowCount / 2];
+            var transformResult = new double[columnCount, rowCount / 2];
 
             for (var i = 0; i < samplesToTransform.Length; i++)
             {
@@ -20,6 +20,8 @@ namespace SoundAnalysis2.Calculators
                 for (var j = 0; j < samplesToTransform[i].Length / 2; j++)
                     transformResult[i, j] = 10 * Math.Log10(samplesToTransform[i][j].MagnitudeSquared());
             }
+
+            return transformResult;
         }
 
         private static Complex32[][] GetSamplesForSpectrogram(DataPoint[] discreteSignal, int samplesPerFrame, double frameOverlapping, WindowType selectedWindowType, out int rowCount, out int columnCount, out int frameOffset)
@@ -33,19 +35,13 @@ namespace SoundAnalysis2.Calculators
 
             var result = new Complex32[columnCount][];
 
-            double[] window = null;
-            switch (selectedWindowType)
+            var window = selectedWindowType switch
             {
-                case WindowType.Rectangular:
-                    window = Window.Dirichlet(discreteSignal.Length);
-                    break;
-                case WindowType.Hamming:
-                    window = Window.Hamming(discreteSignal.Length);
-                    break;
-                case WindowType.Hann:
-                    window = Window.Hann(discreteSignal.Length);
-                    break;
-            }
+                WindowType.Rectangular => Window.Dirichlet(discreteSignal.Length),
+                WindowType.Hamming => Window.Hamming(discreteSignal.Length),
+                WindowType.Hann => Window.Hann(discreteSignal.Length),
+                _ => null
+            };
 
             for (var i = 0; i < columnCount; i++)
             {

@@ -112,20 +112,21 @@ namespace SoundAnalysis2
 
         private void UpdateFourierTransform()
         {
-            DataPoint[] fourierResult = new DataPoint[1];
-
-            if (selectedFourierTransformScope == FourierTransformScope.WholeClip)
-                fourierResult = FourierHelpers.CalculateFourierTransform(discreteSignal, sampleRate, selectedWindowType);
-
-            else if (selectedFourierTransformScope == FourierTransformScope.OneFrame)
-                fourierResult = FourierHelpers.CalculateFourierTransform(discreteSignal, sampleRate, selectedWindowType, samplesPerFrame, (int)(sampleRate * selectedFrameStartTime));
+            var fourierResult = selectedFourierTransformScope switch
+            {
+                FourierTransformScope.WholeClip => FourierHelpers.CalculateFourierTransform(discreteSignal, sampleRate,
+                    selectedWindowType),
+                FourierTransformScope.OneFrame => FourierHelpers.CalculateFourierTransform(discreteSignal, sampleRate,
+                    selectedWindowType, samplesPerFrame, (int) (sampleRate * selectedFrameStartTime)),
+                _ => new DataPoint[1]
+            };
 
             fourierPlotView.Model = PlotLibrary.UpdateWaveformPlot(fourierResult, "Frequency [Hz]", "Magnitude", "Fourier Transform");
         }
 
         private void UpdateSpectrum()
         {
-            SpectrogramCalculator.CalculateSpectrogram(discreteSignal, selectedWindowType, samplesPerFrame, frameOverlapping, out var transformResult);
+            var transformResult = SpectrogramCalculator.CalculateSpectrogram(discreteSignal, selectedWindowType, samplesPerFrame, frameOverlapping);
             spectrogramPlotView.Model = PlotLibrary.UpdateSpectrogram(transformResult, discreteSignal.Last().X, sampleRate);
         }
 
@@ -147,16 +148,14 @@ namespace SoundAnalysis2
 
         private void mpfButton_Click(object sender, EventArgs e)
         {
-            if (int.TryParse(mpfTextBox.Text, out millisecondsPerFrame))
-            {
-                samplesPerFrame = millisecondsPerFrame * (int)sampleRate / 1000;
+            if (!int.TryParse(mpfTextBox.Text, out millisecondsPerFrame)) return;
+            samplesPerFrame = millisecondsPerFrame * (int)sampleRate / 1000;
 
-                foreach (var pageType in shouldReDrawChart.Keys.ToList())
-                    shouldReDrawChart[pageType] = true;
+            foreach (var pageType in shouldReDrawChart.Keys.ToList())
+                shouldReDrawChart[pageType] = true;
 
-                if (discreteSignal != null && discreteSignal.Length != 0)
-                    UpdateAnalysisResults(selectedTabPage);
-            }
+            if (discreteSignal != null && discreteSignal.Length != 0)
+                UpdateAnalysisResults(selectedTabPage);
         }
 
         private void windowTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -183,7 +182,6 @@ namespace SoundAnalysis2
         {
             selectedFourierTransformScope = FourierTransformScope.WholeClip;
             frameStartTextBox.Enabled = false;
-
             shouldReDrawChart[TabPage.Fourier] = true;
             if (discreteSignal != null && discreteSignal.Length != 0)
                 UpdateAnalysisResults(TabPage.Fourier);
@@ -193,7 +191,6 @@ namespace SoundAnalysis2
         {
             selectedFourierTransformScope = FourierTransformScope.OneFrame;
             frameStartTextBox.Enabled = true;
-
             shouldReDrawChart[TabPage.Fourier] = true;
             if (discreteSignal != null && discreteSignal.Length != 0)
                 UpdateAnalysisResults(TabPage.Fourier);
